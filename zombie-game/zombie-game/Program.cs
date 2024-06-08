@@ -142,11 +142,11 @@ public class Program
         // Draw room boundaries
         Raylib.DrawRectangleLinesEx(room, 3, Color.RayWhite);
         // Draw door
-        Raylib.DrawRectangleRec(door, Color.White);
+        Raylib.DrawRectangleRec(door, Color.DarkBrown);
         // Draw player
         Raylib.DrawRectangle((int)(playerPosition.X - playerSize / 2), (int)(playerPosition.Y - playerSize / 2), playerSize, playerSize, Color.RayWhite);
         // Draw NPC
-        Raylib.DrawRectangle((int)(npcPosition.X - npcSize / 2), (int)(npcPosition.Y - npcSize / 2), npcSize, npcSize, Color.Blue);
+        Raylib.DrawRectangle((int)(npcPosition.X - npcSize / 2), (int)(npcPosition.Y - npcSize / 2), npcSize, npcSize, Color.RayWhite);
 
         // Draw table
         Raylib.DrawRectangleRec(table, Color.Brown);
