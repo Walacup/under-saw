@@ -19,6 +19,13 @@ public class Program
     static int npcSize = 50; // NPC size
     static bool isChatting = false; // Chat state
 
+    static Rectangle table; // Table boundaries
+    static Rectangle gun; // Gun boundaries
+    static bool hasGun = false; // Gun collection state
+
+    static bool nearNpc = false; // Proximity to NPC
+    static bool nearGun = false; // Proximity to gun
+
     static void Main()
     {
         // Create a window to draw to
@@ -55,11 +62,16 @@ public class Program
         door = new Rectangle(screenWidth - 100, screenHeight / 2 - 25, 50, 50);
         // Initialize NPC position
         npcPosition = new Vector2(screenWidth / 3, screenHeight / 2);
+
+        // Initialize table and gun positions
+        table = new Rectangle(screenWidth / 2 - 50, screenHeight / 2 + 100, 100, 50);
+        gun = new Rectangle(screenWidth / 2 - 10, screenHeight / 2 + 120, 20, 20);
     }
 
     static void Update()
     {
         float deltaTime = Raylib.GetFrameTime();
+        Vector2 oldPosition = playerPosition;
 
         // Player movement
         if (Raylib.IsKeyDown(KeyboardKey.W) && playerPosition.Y - playerSize / 2 > room.Y)
@@ -79,22 +91,49 @@ public class Program
             playerPosition.X += playerSpeed * deltaTime;
         }
 
-        // Check if player is colliding with the door
+        // Check collisions with table
         Rectangle playerRect = new Rectangle(playerPosition.X - playerSize / 2, playerPosition.Y - playerSize / 2, playerSize, playerSize);
-        if (Raylib.CheckCollisionRecs(playerRect, door))
+        if (Raylib.CheckCollisionRecs(playerRect, table))
+        {
+            playerPosition = oldPosition;
+        }
+
+        // Check if player is near the NPC
+        Rectangle npcProximity = new Rectangle(npcPosition.X - npcSize * 1.5f, npcPosition.Y - npcSize * 1.5f, npcSize * 3, npcSize * 3);
+        nearNpc = Raylib.CheckCollisionRecs(playerRect, npcProximity);
+
+        // Check if player is near the gun
+        Rectangle gunProximity = new Rectangle(gun.X - 30, gun.Y - 30, gun.Width + 60, gun.Height + 60);
+        nearGun = Raylib.CheckCollisionRecs(playerRect, gunProximity);
+
+        // Interact with NPC
+        if (nearNpc && Raylib.IsKeyPressed(KeyboardKey.E))
+        {
+            isChatting = !isChatting;
+        }
+
+        // Collect the gun
+        if (nearGun && Raylib.IsKeyPressed(KeyboardKey.E))
+        {
+            hasGun = true;
+        }
+
+        // Check if player is colliding with the door
+        if (Raylib.CheckCollisionRecs(playerRect, door) && hasGun)
         {
             Raylib.CloseWindow();
         }
 
-        // Check if player is near the NPC and triggers chatting
-        Rectangle npcRect = new Rectangle(npcPosition.X - npcSize / 2, npcPosition.Y - npcSize / 2, npcSize, npcSize);
-        if (Raylib.CheckCollisionRecs(playerRect, npcRect))
-        {
-            isChatting = true;
-        }
-        else
+        // Disable chatting if player moves away from NPC
+        if (!nearNpc)
         {
             isChatting = false;
+        }
+
+        // Prevent walking through NPC
+        if (Raylib.CheckCollisionRecs(playerRect, new Rectangle(npcPosition.X - npcSize / 2, npcPosition.Y - npcSize / 2, npcSize, npcSize)))
+        {
+            playerPosition = oldPosition;
         }
     }
 
@@ -108,6 +147,20 @@ public class Program
         Raylib.DrawRectangle((int)(playerPosition.X - playerSize / 2), (int)(playerPosition.Y - playerSize / 2), playerSize, playerSize, Color.RayWhite);
         // Draw NPC
         Raylib.DrawRectangle((int)(npcPosition.X - npcSize / 2), (int)(npcPosition.Y - npcSize / 2), npcSize, npcSize, Color.Blue);
+
+        // Draw table
+        Raylib.DrawRectangleRec(table, Color.Brown);
+        // Draw gun if not collected
+        if (!hasGun)
+        {
+            Raylib.DrawRectangleRec(gun, Color.Gray);
+        }
+
+        // Draw prompt to interact if near NPC or gun
+        if (nearNpc || nearGun)
+        {
+            Raylib.DrawText("Press E to interact", screenWidth / 2 - 60, screenHeight - 40, 20, Color.RayWhite);
+        }
 
         // Draw chat box if interacting with NPC
         if (isChatting)
