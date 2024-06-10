@@ -51,7 +51,7 @@ public class Program
         // Close the window
         Raylib.CloseWindow();
     }
-
+     
     static void Setup()
     {
         // Initialize player position
